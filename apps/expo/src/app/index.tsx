@@ -97,9 +97,9 @@ const Index = () => {
     <SafeAreaView className="bg-[#1F104A]">
       {/* Changes page title visible on the header */}
       <Stack.Screen options={{ title: "Home Page" }} />
-      <View className="h-full w-full p-4">
-        <Text className="mx-auto pb-2 text-5xl font-bold text-white">
-          Create <Text className="text-pink-400">T3</Text> Turbo
+      <View className="h-full w-full p-4 ">
+        <Text className="mx-auto pb-2 text-xl font-bold text-white">
+          Shark Posts
         </Text>
 
         <Button
@@ -107,12 +107,6 @@ const Index = () => {
           title="Refresh posts"
           color={"#f472b6"}
         />
-
-        <View className="py-2">
-          <Text className="font-semibold italic text-white">
-            Press on a post
-          </Text>
-        </View>
 
         <FlashList
           data={postQuery.data}
