@@ -16,9 +16,6 @@ const PostCard: React.FC<{
     <View className="flex flex-row rounded-lg bg-white/10 p-4">
       <View className="flex-grow">
         <TouchableOpacity onPress={() => router.push(`/post/${post.id}`)}>
-          <Text className="text-xl font-semibold text-pink-400">
-            {post.title}
-          </Text>
           <Text className="mt-2 text-white">{post.content}</Text>
         </TouchableOpacity>
       </View>
@@ -32,12 +29,10 @@ const PostCard: React.FC<{
 const CreatePost: React.FC = () => {
   const utils = api.useContext();
 
-  const [title, setTitle] = React.useState("");
   const [content, setContent] = React.useState("");
 
   const { mutate, error } = api.post.create.useMutation({
     async onSuccess() {
-      setTitle("");
       setContent("");
       await utils.post.all.invalidate();
     },
@@ -46,18 +41,7 @@ const CreatePost: React.FC = () => {
   return (
     <View className="mt-4">
       <TextInput
-        className="mb-2 rounded bg-white/10 p-2 text-white"
-        placeholderTextColor="rgba(255, 255, 255, 0.5)"
-        value={title}
-        onChangeText={setTitle}
-        placeholder="Title"
-      />
-      {error?.data?.zodError?.fieldErrors.title && (
-        <Text className="mb-2 text-red-500">
-          {error.data.zodError.fieldErrors.title}
-        </Text>
-      )}
-      <TextInput
+        multiline
         className="mb-2 rounded bg-white/10 p-2 text-white"
         placeholderTextColor="rgba(255, 255, 255, 0.5)"
         value={content}
@@ -73,7 +57,6 @@ const CreatePost: React.FC = () => {
         className="rounded bg-pink-400 p-2"
         onPress={() => {
           mutate({
-            title,
             content,
           });
         }}
