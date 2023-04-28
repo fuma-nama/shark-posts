@@ -5,5 +5,20 @@
 html,
 body,
 #__next {
+  background-color: theme("colors.slate.950");
   height: 100%;
+}
+
+.DraftEditor-root {
+  @apply max-h-[400px] min-h-[100px] w-full overflow-y-auto bg-slate-900 text-lg text-white;
+}
+
+.DraftEditor-editorContainer,
+.public-DraftEditorPlaceholder-root,
+.public-DraftEditor-content {
+  @apply max-h-[inherit] min-h-[inherit];
+}
+
+.public-DraftEditorPlaceholder-inner {
+  @apply text-gray-400;
 }
