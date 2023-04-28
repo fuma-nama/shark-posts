@@ -3,20 +3,16 @@ import { Menu, Transition } from "@headlessui/react";
 import clsx from "clsx";
 import { tv } from "tailwind-variants";
 
-export function Dropdown({ children }: { children: ReactNode }) {
+export function Dropdown({
+  button,
+  children,
+}: {
+  button: ReactNode;
+  children: ReactNode;
+}) {
   return (
     <Menu as="div" className="relative inline-block text-left">
-      <div>
-        <Menu.Button
-          className={clsx(
-            "inline-flex w-full justify-center rounded-md bg-slate-950 bg-opacity-20 px-4 py-2 text-sm font-medium text-white transition-colors",
-            "ui-open:bg-pink-500/10 ui-open:text-pink-400",
-            "hover:bg-pink-500/10 hover:text-pink-400",
-          )}
-        >
-          Options
-        </Menu.Button>
-      </div>
+      {button}
       <Transition
         as={Fragment}
         enter="transition ease-out duration-100"
@@ -56,6 +52,8 @@ const item = tv({
 export type ItemProps = ComponentPropsWithoutRef<"button"> & {
   color?: "default" | "danger";
 };
+
+Dropdown.Button = Menu.Button;
 
 function Item({ disabled, children, color, ...props }: ItemProps) {
   return (
