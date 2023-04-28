@@ -11,7 +11,7 @@ const Home: NextPageWithLayout = () => {
   });
 
   return (
-    <div className="flex flex-col gap-4 overflow-y-auto py-5">
+    <div className="flex flex-col gap-4 overflow-y-auto py-5 md:py-[calc(36px+2rem)]">
       {postQuery.data ? (
         postQuery.data?.length === 0 ? (
           <span>There are no posts!</span>
