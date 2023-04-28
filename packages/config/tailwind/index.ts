@@ -5,5 +5,5 @@ export default {
   theme: {
     extend: {},
   },
-  plugins: [],
+  plugins: [require("@headlessui/tailwindcss")],
 } satisfies Config;
