@@ -9,9 +9,16 @@ export default function CreatePostDialog(props: {
   open: boolean;
   setOpen: (v: boolean) => void;
 }) {
+  const utils = trpc.useContext();
   const postMutation = trpc.post.create.useMutation({
-    onSuccess: () => {
+    onSuccess: (post) => {
       props.setOpen(false);
+
+      utils.post.all.setData(undefined, (prev) => {
+        if (prev == null) return prev;
+
+        return [...prev, post];
+      });
     },
   });
   const [editorState, setEditorState] = useState(() =>

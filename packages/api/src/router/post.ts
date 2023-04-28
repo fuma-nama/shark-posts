@@ -22,6 +22,9 @@ export const postRouter = createTRPCRouter({
     )
     .mutation(({ ctx, input }) => {
       return ctx.prisma.post.create({
+        include: {
+          author: true,
+        },
         data: {
           ...input,
           author_id: ctx.session.user.id,
