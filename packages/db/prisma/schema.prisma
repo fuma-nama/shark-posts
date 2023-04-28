@@ -12,11 +12,10 @@ datasource db {
 
 model Post {
     id      String @id @default(cuid())
-    title   String
     content String
     author_id String
 
-author User @relation(fields: [author_id], references: [id])
+    author User @relation(fields: [author_id], references: [id])
 }
 
 // NextAuth.js Models
@@ -51,7 +50,7 @@ model Session {
 
 model User {
     id            String    @id @default(cuid())
-    name          String?
+    name          String
     email         String?   @unique
     emailVerified DateTime?
     image         String?
