@@ -1,17 +1,17 @@
-import { api } from "~/utils/api";
+import { trpc } from "~/utils/trpc";
 import PostCard from "~/components/PostCard";
 import { useMainLayout } from "~/components/layouts/main";
 import type { NextPageWithLayout } from "./_app";
 
 const Home: NextPageWithLayout = () => {
-  const postQuery = api.post.all.useQuery();
+  const postQuery = trpc.post.all.useQuery();
 
-  const deletePostMutation = api.post.delete.useMutation({
+  const deletePostMutation = trpc.post.delete.useMutation({
     onSettled: () => postQuery.refetch(),
   });
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-4 md:mt-12">
       {postQuery.data ? (
         postQuery.data?.length === 0 ? (
           <span>There are no posts!</span>
