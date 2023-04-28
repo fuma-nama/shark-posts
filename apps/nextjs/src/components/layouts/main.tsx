@@ -11,7 +11,10 @@ import {
 import clsx from "clsx";
 
 import "draft-js/dist/Draft.css";
+import { useSession } from "next-auth/react";
+
 import { setModal } from "~/stores/modal";
+import { Avatar } from "../system/avatar";
 
 export function useMainLayout(children: ReactNode) {
   return (
@@ -23,13 +26,12 @@ export function useMainLayout(children: ReactNode) {
       </Head>
       <main
         className={clsx(
-          "mx-auto grid h-full w-full max-w-screen-2xl grid-cols-[auto_1fr] gap-3 p-3 text-white",
-          "md:gap-6 md:p-10 lg:grid-cols-[0.4fr_1fr_0.4fr]",
+          "mx-auto grid h-full w-full max-w-screen-2xl grid-cols-[auto_1fr] gap-3 px-3 text-white",
+          "md:gap-6 md:px-10 lg:grid-cols-[0.4fr_1fr_0.4fr]",
         )}
       >
         <Sidebar />
         {children}
-        <div />
       </main>
     </>
   );
@@ -37,6 +39,7 @@ export function useMainLayout(children: ReactNode) {
 
 function Sidebar() {
   const router = useRouter();
+  const { status, data } = useSession();
   const items = [
     {
       icon: <HomeIcon className="h-6 w-6" />,
@@ -56,7 +59,7 @@ function Sidebar() {
   ];
 
   return (
-    <div className="flex flex-col gap-3 md:min-w-[250px]">
+    <div className="flex flex-col gap-3 py-5 md:min-w-[250px]">
       <h1 className="text-xl font-bold tracking-tight max-md:hidden sm:text-3xl">
         Shark <span className="text-pink-400">Post</span>
       </h1>
@@ -65,7 +68,7 @@ function Sidebar() {
           key={item.href}
           href={item.href}
           className={clsx(
-            "flex flex-row items-center gap-2 rounded-lg px-4 py-2 text-xl transition-colors",
+            "flex flex-row items-center gap-2 rounded-lg px-2 py-2 text-xl transition-colors md:px-4",
             "hover:bg-slate-900",
             router.route.startsWith(item.href) && "bg-slate-900 font-semibold",
           )}
@@ -75,12 +78,21 @@ function Sidebar() {
         </Link>
       ))}
       <button
-        className="mt-8 w-full rounded-full bg-pink-400 px-4 py-2 text-center text-lg font-semibold"
+        className="mt-8 w-full rounded-full bg-pink-400 px-2 py-2 text-center text-lg font-semibold md:px-4"
         onClick={() => setModal("create-post", true)}
       >
         <Pencil1Icon className="h-6 w-6 md:hidden" />
         <span className="max-md:hidden">Create Post</span>
       </button>
+      {status === "authenticated" && (
+        <div className="mt-auto flex flex-row gap-3 max-md:mx-auto">
+          <Avatar src={data.user.image ?? null} name={data.user.name} />
+          <div className="max-md:hidden">
+            <p className="font-semibold">{data.user.name}</p>
+            <p className="text-sm text-gray-400">@{data.user.id}</p>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
