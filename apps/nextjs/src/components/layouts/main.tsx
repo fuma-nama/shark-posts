@@ -27,7 +27,7 @@ export function useMainLayout(children: ReactNode) {
       <main
         className={clsx(
           "mx-auto grid h-full w-full max-w-screen-2xl grid-cols-[auto_1fr] gap-3 px-3 text-white",
-          "md:gap-6 md:px-10 lg:grid-cols-[0.4fr_1fr_0.4fr]",
+          "md:gap-6 lg:px-10 xl:grid-cols-[0.4fr_1fr_0.4fr]",
         )}
       >
         <Sidebar />
@@ -59,8 +59,8 @@ function Sidebar() {
   ];
 
   return (
-    <div className="flex flex-col gap-3 py-5 md:min-w-[250px]">
-      <h1 className="text-xl font-bold tracking-tight max-md:hidden sm:text-3xl">
+    <div className="flex flex-col gap-3 py-4 md:min-w-[250px]">
+      <h1 className="h-11 text-xl font-bold tracking-tight max-md:hidden sm:text-3xl">
         Shark <span className="text-pink-400">Post</span>
       </h1>
       {items.map((item) => (
@@ -78,7 +78,7 @@ function Sidebar() {
         </Link>
       ))}
       <button
-        className="mt-8 w-full rounded-full bg-pink-400 px-2 py-2 text-center text-lg font-semibold md:px-4"
+        className="w-full rounded-full bg-pink-400 px-2 py-2 text-center text-lg font-semibold md:mt-8 md:px-4"
         onClick={() => setModal("create-post", true)}
       >
         <Pencil1Icon className="h-6 w-6 md:hidden" />

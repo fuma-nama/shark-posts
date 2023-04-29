@@ -17,7 +17,7 @@ export default function CreatePostDialog(props: {
       utils.post.all.setData(undefined, (prev) => {
         if (prev == null) return prev;
 
-        return [...prev, post];
+        return [post, ...prev];
       });
     },
   });

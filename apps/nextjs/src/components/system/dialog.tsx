@@ -5,7 +5,7 @@ import { tv } from "tailwind-variants";
 const dialog = tv({
   slots: {
     panel:
-      "w-full max-w-md transform overflow-hidden rounded-2xl bg-slate-900 p-5 text-left align-middle shadow-xl transition-all",
+      "w-full max-w-screen-md transform overflow-hidden rounded-2xl bg-slate-900 p-5 text-left align-middle shadow-xl transition-all",
   },
 });
 
