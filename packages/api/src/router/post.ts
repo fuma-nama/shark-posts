@@ -1,18 +1,30 @@
 import { z } from "zod";
 
+import { prisma } from "@acme/db";
+
 import { createTRPCRouter, protectedProcedure, publicProcedure } from "../trpc";
 
 export const postRouter = createTRPCRouter({
-  all: publicProcedure.query(({ ctx }) => {
-    return ctx.prisma.post.findMany({
+  all: publicProcedure.query(() => {
+    return prisma.post.findMany({
       include: { author: true },
-      orderBy: { id: "desc" },
+      orderBy: { timestamp: "desc" },
     });
   }),
   byId: publicProcedure
     .input(z.object({ id: z.string() }))
-    .query(({ ctx, input }) => {
-      return ctx.prisma.post.findFirst({ where: { id: input.id } });
+    .query(({ input }) => {
+      return prisma.post.findFirst({ where: { id: input.id } });
+    }),
+  addToFavourite: protectedProcedure
+    .input(z.object({ post_id: z.string() }))
+    .mutation(async ({ input, ctx }) => {
+      await prisma.favourite.createMany({
+        data: {
+          post_id: input.post_id,
+          user_id: ctx.session.user.id,
+        },
+      });
     }),
   create: protectedProcedure
     .input(
@@ -21,7 +33,7 @@ export const postRouter = createTRPCRouter({
       }),
     )
     .mutation(({ ctx, input }) => {
-      return ctx.prisma.post.create({
+      return prisma.post.create({
         include: {
           author: true,
         },
@@ -31,7 +43,7 @@ export const postRouter = createTRPCRouter({
         },
       });
     }),
-  delete: publicProcedure.input(z.string()).mutation(({ ctx, input }) => {
-    return ctx.prisma.post.delete({ where: { id: input } });
+  delete: publicProcedure.input(z.string()).mutation(({ input }) => {
+    return prisma.post.deleteMany({ where: { id: input } });
   }),
 });

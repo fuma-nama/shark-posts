@@ -14,8 +14,10 @@ model Post {
     id      String @id @default(cuid())
     content String
     author_id String
+    timestamp DateTime @default(now())
 
-    author User @relation(fields: [author_id], references: [id])
+    author User @relation(fields: [author_id], references: [id], onDelete: Cascade)
+    favourites Favourite[]
 }
 
 // NextAuth.js Models
@@ -57,6 +59,17 @@ model User {
     accounts      Account[]
     sessions      Session[]
     posts Post[]
+    favourites Favourite[]
+}
+
+model Favourite {
+    user_id String
+    post_id String
+
+    post Post @relation(fields: [post_id], references: [id], onDelete: Cascade)
+    user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+    @@id([user_id, post_id])
 }
 
 model VerificationToken {
