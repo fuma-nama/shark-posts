@@ -21,7 +21,7 @@ export default function PostCard(props: Props) {
 
   return (
     <div {...props.rootProps}>
-      <div className="mb-4 flex flex-row rounded-lg bg-slate-900 p-4">
+      <div className="mb-4 flex flex-row rounded-lg bg-slate-900 p-2 lg:p-4">
         <div className="mr-2">
           <Avatar src={post.author.image} name={post.author.name} />
         </div>

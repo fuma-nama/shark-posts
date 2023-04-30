@@ -2,7 +2,7 @@ import Image from "next/image";
 
 export function Avatar({ src, name }: { src: string | null; name: string }) {
   return (
-    <div className="h-[40px] w-[40px] overflow-hidden rounded-full bg-pink-400">
+    <div className="h-[40px] w-[40px] flex-shrink-0 overflow-hidden rounded-full bg-pink-400">
       {src != null && (
         <Image
           src={src}

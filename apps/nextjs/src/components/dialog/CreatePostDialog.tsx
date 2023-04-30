@@ -32,7 +32,7 @@ export default function CreatePostDialog(props: {
   };
 
   return (
-    <Dialog {...props}>
+    <Dialog {...props} size="md">
       <Editor
         editorState={editorState}
         onChange={setEditorState}

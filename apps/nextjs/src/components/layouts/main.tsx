@@ -1,4 +1,10 @@
-import { type ReactNode } from "react";
+import {
+  createContext,
+  createRef,
+  useContext,
+  type ReactNode,
+  type RefObject,
+} from "react";
 import Head from "next/head";
 import Link from "next/link";
 import { useRouter } from "next/router";
@@ -16,7 +22,13 @@ import { useSession } from "next-auth/react";
 import { setModal } from "~/stores/modal";
 import { Avatar } from "../system/avatar";
 
+const ViewportContext = createContext<
+  { rootRef: RefObject<HTMLDivElement> } | undefined
+>(undefined);
+
 export function useMainLayout(children: ReactNode) {
+  const ref = createRef<HTMLDivElement>();
+
   return (
     <>
       <Head>
@@ -26,12 +38,19 @@ export function useMainLayout(children: ReactNode) {
       </Head>
       <main
         className={clsx(
-          "mx-auto grid h-full w-full max-w-screen-2xl grid-cols-[auto_1fr] gap-3 px-3 text-white",
-          "md:gap-6 lg:px-10 xl:grid-cols-[350px_1fr]",
+          "mx-auto grid h-full w-full grid-cols-[auto_1fr] gap-3 pl-3 text-white",
+          "md:gap-6 lg:pl-10 xl:grid-cols-[0.5fr_1fr]",
         )}
       >
         <Sidebar />
-        {children}
+        <div
+          ref={ref}
+          className="overflow-y-auto overflow-x-hidden py-4 md:py-[4.5rem]"
+        >
+          <ViewportContext.Provider value={{ rootRef: ref }}>
+            {children}
+          </ViewportContext.Provider>
+        </div>
       </main>
     </>
   );
@@ -59,7 +78,7 @@ function Sidebar() {
   ];
 
   return (
-    <div className="flex flex-col gap-3 py-4 md:min-w-[250px]">
+    <div className="ml-auto flex flex-col gap-3 py-4 md:w-[200px] lg:w-[350px]">
       <h1 className="h-11 text-xl font-bold tracking-tight max-md:hidden sm:text-3xl">
         Shark <span className="text-pink-400">Post</span>
       </h1>
@@ -87,12 +106,23 @@ function Sidebar() {
       {status === "authenticated" && (
         <div className="mt-auto flex flex-row gap-3 max-md:mx-auto">
           <Avatar src={data.user.image ?? null} name={data.user.name} />
-          <div className="max-md:hidden">
-            <p className="font-semibold">{data.user.name}</p>
-            <p className="text-sm text-gray-400">@{data.user.id}</p>
+          <div className="w-0 flex-1 max-md:hidden">
+            <p className="overflow-hidden overflow-ellipsis font-semibold">
+              {data.user.name}
+            </p>
+            <p className="overflow-hidden overflow-ellipsis text-sm text-gray-400">
+              @{data.user.id}
+            </p>
           </div>
         </div>
       )}
     </div>
   );
+}
+
+export function useViewport() {
+  const ctx = useContext(ViewportContext);
+
+  if (ctx == null) throw new Error("Failed to get viewport context");
+  return ctx;
 }

@@ -11,7 +11,7 @@ const AccountPage: NextPageWithLayout = () => {
   const logoutMutation = useMutation(() => signOut());
 
   return (
-    <div className="flex flex-col gap-4 overflow-y-auto py-4 md:py-[4.5rem]">
+    <div className="flex flex-col gap-4">
       {status === "authenticated" && (
         <Avatar src={data.user.image ?? null} name={data.user.name} />
       )}

@@ -1,11 +1,24 @@
 import { Fragment, type ReactNode } from "react";
 import { Dialog as Base, Transition } from "@headlessui/react";
-import { tv } from "tailwind-variants";
+import { tv, type VariantProps } from "tailwind-variants";
 
 const dialog = tv({
   slots: {
     panel:
-      "w-full max-w-screen-md transform overflow-hidden rounded-2xl bg-slate-900 p-5 text-left align-middle shadow-xl transition-all",
+      "w-full transform overflow-hidden rounded-2xl bg-slate-900 p-5 text-left align-middle shadow-xl transition-all",
+  },
+  variants: {
+    size: {
+      md: {
+        panel: "max-w-xl",
+      },
+      lg: {
+        panel: "max-w-screen-sm",
+      },
+    },
+  },
+  defaultVariants: {
+    size: "lg",
   },
 });
 
@@ -15,7 +28,7 @@ export type DialogProps = {
   title?: string;
   description?: string;
   children: ReactNode;
-};
+} & VariantProps<typeof dialog>;
 
 export function Dialog({
   open,
@@ -23,8 +36,9 @@ export function Dialog({
   title,
   description,
   children,
+  size,
 }: DialogProps) {
-  const styles = dialog();
+  const styles = dialog({ size });
 
   return (
     <Transition appear show={open} as={Fragment}>
