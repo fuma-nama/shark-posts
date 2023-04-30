@@ -9,15 +9,26 @@ export default function CreatePostDialog(props: {
   open: boolean;
   setOpen: (v: boolean) => void;
 }) {
+  return (
+    <Dialog {...props} size="md">
+      <Content onClose={() => props.setOpen(false)} />
+    </Dialog>
+  );
+}
+
+function Content({ onClose }: { onClose: () => void }) {
   const utils = trpc.useContext();
   const postMutation = trpc.post.create.useMutation({
     onSuccess: (post) => {
-      props.setOpen(false);
+      onClose();
 
-      utils.post.all.setData(undefined, (prev) => {
+      utils.post.get.setInfiniteData({ limit: 10 }, (prev) => {
         if (prev == null) return prev;
 
-        return [post, ...prev];
+        return {
+          pageParams: prev.pageParams,
+          pages: [[post], ...prev.pages],
+        };
       });
     },
   });
@@ -32,7 +43,7 @@ export default function CreatePostDialog(props: {
   };
 
   return (
-    <Dialog {...props} size="md">
+    <>
       <Editor
         editorState={editorState}
         onChange={setEditorState}
@@ -50,13 +61,10 @@ export default function CreatePostDialog(props: {
         >
           Post
         </button>
-        <button
-          className={button({ color: "secondary" })}
-          onClick={() => props.setOpen(false)}
-        >
+        <button className={button({ color: "secondary" })} onClick={onClose}>
           Close
         </button>
       </div>
-    </Dialog>
+    </>
   );
 }
