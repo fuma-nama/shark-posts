@@ -37,10 +37,17 @@ const Home: NextPageWithLayout = () => {
   );
 
   const deletePostMutation = trpc.post.delete.useMutation({
-    onSuccess(_, variables) {
-      utils.post.all.setData(undefined, (prev) =>
-        prev?.filter((post) => post.id !== variables),
-      );
+    onSuccess(_, deletedId) {
+      utils.post.get.setInfiniteData({ limit: 10 }, (prev) => {
+        if (prev == null) return prev;
+
+        return {
+          ...prev,
+          pages: prev.pages.map((page) =>
+            page.filter((post) => post.id !== deletedId),
+          ),
+        };
+      });
     },
   });
 
