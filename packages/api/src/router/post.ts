@@ -5,6 +5,37 @@ import { prisma } from "@acme/db";
 import { createTRPCRouter, protectedProcedure, publicProcedure } from "../trpc";
 
 export const postRouter = createTRPCRouter({
+  get: publicProcedure
+    .input(
+      z.object({
+        limit: z.number().min(1).max(100),
+        cursor: z
+          .object({
+            type: z.enum(["after", "before"]),
+            date: z.date(),
+          })
+          .nullish(),
+      }),
+    )
+    .query(({ input }) => {
+      return prisma.post.findMany({
+        include: { author: true },
+        orderBy: { timestamp: "desc" },
+        where: {
+          timestamp:
+            input.cursor == null
+              ? undefined
+              : input.cursor.type === "after"
+              ? {
+                  gt: new Date(input.cursor.date),
+                }
+              : {
+                  lt: new Date(input.cursor.date),
+                },
+        },
+        take: input.limit,
+      });
+    }),
   all: publicProcedure.query(() => {
     return prisma.post.findMany({
       include: { author: true },

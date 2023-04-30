@@ -27,7 +27,7 @@ export function useMainLayout(children: ReactNode) {
       <main
         className={clsx(
           "mx-auto grid h-full w-full max-w-screen-2xl grid-cols-[auto_1fr] gap-3 px-3 text-white",
-          "md:gap-6 lg:px-10 xl:grid-cols-[0.4fr_1fr_0.4fr]",
+          "md:gap-6 lg:px-10 xl:grid-cols-[350px_1fr]",
         )}
       >
         <Sidebar />

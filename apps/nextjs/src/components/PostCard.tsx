@@ -1,3 +1,4 @@
+import type { ComponentProps } from "react";
 import { CopyIcon, DotsHorizontalIcon, TrashIcon } from "@radix-ui/react-icons";
 import clsx from "clsx";
 import { useSession } from "next-auth/react";
@@ -10,22 +11,27 @@ import { Dropdown } from "./system/dropdown";
 type Props = {
   post: RouterOutputs["post"]["all"][number];
   onPostDelete?: () => void;
+  rootProps?: ComponentProps<"div"> & {
+    "data-index": number;
+  };
 };
 
 export default function PostCard(props: Props) {
   const { post } = props;
 
   return (
-    <div className="flex flex-row rounded-lg bg-slate-900 p-4">
-      <div className="mr-2">
-        <Avatar src={post.author.image} name={post.author.name} />
-      </div>
-      <div className="flex-grow">
-        <div className="flex flex-row items-center justify-between">
-          <p className="font-semibold">{post.author.name}</p>
-          <OptionsDropdown {...props} />
+    <div {...props.rootProps}>
+      <div className="mb-4 flex flex-row rounded-lg bg-slate-900 p-4">
+        <div className="mr-2">
+          <Avatar src={post.author.image} name={post.author.name} />
         </div>
-        <p className="mt-1 whitespace-pre-line">{post.content}</p>
+        <div className="flex-grow">
+          <div className="flex flex-row items-center justify-between">
+            <p className="font-semibold">{post.author.name}</p>
+            <OptionsDropdown {...props} />
+          </div>
+          <p className="mt-1 whitespace-pre-line">{post.content}</p>
+        </div>
       </div>
     </div>
   );
