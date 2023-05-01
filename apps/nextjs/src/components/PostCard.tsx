@@ -1,4 +1,3 @@
-import { type ComponentProps } from "react";
 import {
   CopyIcon,
   DotsHorizontalIcon,
@@ -18,29 +17,23 @@ import { Dropdown } from "./system/dropdown";
 
 type Props = {
   post: RouterOutputs["post"]["get"][number];
-  onPostDelete?: () => void;
-  rootProps?: ComponentProps<"div"> & {
-    "data-index": number;
-  };
 };
 
 export default function PostCard(props: Props) {
   const { post } = props;
 
   return (
-    <div {...props.rootProps}>
-      <div className="mb-4 flex flex-row rounded-lg bg-slate-900 p-2 lg:p-4">
-        <div className="mr-2">
-          <Avatar src={post.author.image} name={post.author.name} />
+    <div className="mb-4 flex flex-row rounded-lg bg-slate-900 p-2 lg:p-4">
+      <div className="mr-2">
+        <Avatar src={post.author.image} name={post.author.name} />
+      </div>
+      <div className="flex-grow">
+        <div className="flex flex-row items-center justify-between">
+          <p className="font-semibold">{post.author.name}</p>
+          <OptionsDropdown {...props} />
         </div>
-        <div className="flex-grow">
-          <div className="flex flex-row items-center justify-between">
-            <p className="font-semibold">{post.author.name}</p>
-            <OptionsDropdown {...props} />
-          </div>
-          <p className="mt-1 whitespace-pre-line text-[16px]">{post.content}</p>
-          <Actions post={post} />
-        </div>
+        <p className="mt-1 whitespace-pre-line text-[16px]">{post.content}</p>
+        <Actions post={post} />
       </div>
     </div>
   );
@@ -103,12 +96,31 @@ function Actions({ post }: { post: Props["post"] }) {
   );
 }
 
-function OptionsDropdown({ post, onPostDelete }: Props) {
+function OptionsDropdown({ post }: Props) {
   const { data } = useSession();
   const isAuthor = data?.user.id === post.author_id;
+  const utils = trpc.useContext();
+  const deleteMutation = trpc.post.delete.useMutation({
+    onSuccess(_, deletedId) {
+      utils.post.get.setInfiniteData({ limit: 10 }, (prev) => {
+        if (prev == null) return prev;
+
+        return {
+          ...prev,
+          pages: prev.pages.map((page) =>
+            page.filter((post) => post.id !== deletedId),
+          ),
+        };
+      });
+    },
+  });
 
   const onCopy = () => {
     void navigator.clipboard.writeText(post.content);
+  };
+
+  const onDelete = () => {
+    deleteMutation.mutate(post.id);
   };
 
   return (
@@ -128,7 +140,7 @@ function OptionsDropdown({ post, onPostDelete }: Props) {
       <Dropdown.Item onClick={onCopy}>
         <CopyIcon className="mr-2 h-5 w-5" /> Copy Content
       </Dropdown.Item>
-      <Dropdown.Item color="danger" onClick={onPostDelete} disabled={!isAuthor}>
+      <Dropdown.Item color="danger" onClick={onDelete} disabled={!isAuthor}>
         <TrashIcon className="mr-2 h-5 w-5" /> Delete
       </Dropdown.Item>
     </Dropdown>

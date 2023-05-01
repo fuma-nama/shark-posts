@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { useVirtualizer } from "@tanstack/react-virtual";
+import clsx from "clsx";
 
 import { trpc } from "~/utils/trpc";
 import PostCard from "~/components/PostCard";
@@ -9,24 +10,28 @@ import type { NextPageWithLayout } from "./_app";
 
 const Home: NextPageWithLayout = () => {
   const { rootRef } = useViewport();
-  const utils = trpc.useContext();
   const {
     status,
     data,
     error,
     isFetchingNextPage,
     fetchNextPage,
+    fetchPreviousPage,
+    isFetchingPreviousPage,
     hasNextPage,
   } = trpc.post.get.useInfiniteQuery(
     { limit: 10 },
     {
-      getPreviousPageParam: (firstPage) =>
-        firstPage.length !== 0
-          ? {
-              date: firstPage[0].timestamp,
-              type: "after",
-            }
-          : undefined,
+      staleTime: Infinity,
+      getPreviousPageParam: (_, pages) => {
+        const page = pages.find((page) => page.length !== 0);
+        if (page == null) return undefined;
+
+        return {
+          date: page[0].timestamp,
+          type: "after",
+        };
+      },
       getNextPageParam: (lastPage) =>
         lastPage.length !== 0
           ? {
@@ -37,22 +42,17 @@ const Home: NextPageWithLayout = () => {
     },
   );
 
-  const deletePostMutation = trpc.post.delete.useMutation({
-    onSuccess(_, deletedId) {
-      utils.post.get.setInfiniteData({ limit: 10 }, (prev) => {
-        if (prev == null) return prev;
-
-        return {
-          ...prev,
-          pages: prev.pages.map((page) =>
-            page.filter((post) => post.id !== deletedId),
-          ),
-        };
-      });
-    },
-  });
-
   const allRows = data ? data.pages.flatMap((d) => d) : [];
+
+  const newPostsQuery = trpc.post.hasNewPosts.useQuery(
+    { after: allRows[0]?.timestamp },
+    {
+      initialData: { count: 0 },
+      enabled: allRows.length !== 0,
+      staleTime: 10 * 1000,
+      refetchInterval: 20 * 1000,
+    },
+  );
 
   const virtualizer = useVirtualizer({
     count: allRows.length + 1,
@@ -116,15 +116,30 @@ const Home: NextPageWithLayout = () => {
           }
 
           return (
-            <PostCard
+            <div
               key={virtualRow.key}
-              post={post}
-              onPostDelete={() => deletePostMutation.mutate(post.id)}
-              rootProps={{
-                "data-index": virtualRow.index,
-                ref: virtualizer.measureElement,
-              }}
-            />
+              data-index={virtualRow.index}
+              ref={virtualizer.measureElement}
+            >
+              {newPostsQuery.isSuccess &&
+                newPostsQuery.data.count !== 0 &&
+                virtualRow.index === 0 && (
+                  <div
+                    className={clsx(
+                      "cursor-pointer rounded-md border-2 border-pink-400 bg-pink-500/10 p-2 text-center text-sm text-pink-300",
+                      "mb-3 hover:bg-pink-500/20",
+                    )}
+                    onClick={() => {
+                      void fetchPreviousPage();
+                    }}
+                  >
+                    {isFetchingPreviousPage
+                      ? "Loading New Posts..."
+                      : `Show ${newPostsQuery.data.count} Posts`}
+                  </div>
+                )}
+              <PostCard post={post} />
+            </div>
           );
         })}
       </div>

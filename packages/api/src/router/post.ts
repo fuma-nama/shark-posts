@@ -13,7 +13,7 @@ type PostWithFavourite = Post & {
 };
 
 export const postRouter = createTRPCRouter({
-  get: protectedProcedure
+  get: publicProcedure
     .input(
       z.object({
         limit: z.number().min(1).max(100),
@@ -36,15 +36,18 @@ export const postRouter = createTRPCRouter({
                 image: true,
               },
             },
-            favourites: {
-              take: 1,
-              select: {
-                user_id: true,
-              },
-              where: {
-                user_id: ctx.session.user.id,
-              },
-            },
+            favourites:
+              ctx.session != null
+                ? {
+                    take: 1,
+                    select: {
+                      user_id: true,
+                    },
+                    where: {
+                      user_id: ctx.session.user.id,
+                    },
+                  }
+                : undefined,
             _count: {
               select: {
                 favourites: true,
@@ -71,7 +74,7 @@ export const postRouter = createTRPCRouter({
             ({ favourites, _count, ...row }) =>
               ({
                 ...row,
-                isFavourite: favourites.length !== 0,
+                isFavourite: favourites != null && favourites.length !== 0,
                 favourites: _count.favourites,
               } as PostWithFavourite),
           ),
@@ -83,6 +86,21 @@ export const postRouter = createTRPCRouter({
       orderBy: { timestamp: "desc" },
     });
   }),
+  hasNewPosts: publicProcedure
+    .input(z.object({ after: z.date() }))
+    .query(async ({ input }) => {
+      const count = await prisma.post.count({
+        where: {
+          timestamp: {
+            gt: input.after,
+          },
+        },
+      });
+
+      return {
+        count,
+      };
+    }),
   byId: publicProcedure
     .input(z.object({ id: z.string() }))
     .query(({ input }) => {
