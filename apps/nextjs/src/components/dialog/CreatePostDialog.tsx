@@ -27,7 +27,10 @@ function Content({ onClose }: { onClose: () => void }) {
 
         return {
           pageParams: prev.pageParams,
-          pages: [[post], ...prev.pages],
+          pages: [
+            [{ ...post, favourites: 0, isFavourite: false }],
+            ...prev.pages,
+          ],
         };
       });
     },
