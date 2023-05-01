@@ -37,7 +37,7 @@ export function Dropdown({
 }
 
 const item = tv({
-  base: "group flex w-full items-center rounded-md px-3 py-2 text-sm font-semibold",
+  base: "group flex w-full items-center rounded-md px-3 py-2 text-sm font-semibold ui-disabled:opacity-50",
   variants: {
     color: {
       default: "ui-active:bg-slate-800 text-white",
