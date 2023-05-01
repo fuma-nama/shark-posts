@@ -43,10 +43,7 @@ export function useMainLayout(children: ReactNode) {
         )}
       >
         <Sidebar />
-        <div
-          ref={ref}
-          className="overflow-y-auto overflow-x-hidden py-4 md:py-[4.5rem]"
-        >
+        <div ref={ref} className="overflow-y-auto py-4 pr-3 md:py-[4.5rem]">
           <ViewportContext.Provider value={{ rootRef: ref }}>
             {children}
           </ViewportContext.Provider>

@@ -4,6 +4,7 @@ import { useVirtualizer } from "@tanstack/react-virtual";
 import { trpc } from "~/utils/trpc";
 import PostCard from "~/components/PostCard";
 import { useMainLayout, useViewport } from "~/components/layouts/main";
+import { Spinner } from "~/components/system/spinner";
 import type { NextPageWithLayout } from "./_app";
 
 const Home: NextPageWithLayout = () => {
@@ -83,13 +84,13 @@ const Home: NextPageWithLayout = () => {
 
   return (
     <div
-      className="relative w-full"
+      className="relative"
       style={{
         height: `${virtualizer.getTotalSize()}px`,
       }}
     >
       <div
-        className="absolute left-0 top-0 mr-3 flex w-full max-w-screen-lg flex-col"
+        className="absolute left-0 top-0 flex w-full max-w-screen-lg flex-col"
         style={{
           transform: `translateY(${items[0]?.start ?? 0}px)`,
         }}
@@ -130,12 +131,6 @@ const Home: NextPageWithLayout = () => {
     </div>
   );
 };
-
-function Spinner() {
-  return (
-    <div className="h-10 w-10 animate-spin items-center rounded-full border-4 border-slate-800 border-l-blue-500" />
-  );
-}
 
 function toNonNull<T>(v: T | null | undefined): T {
   return v as unknown as T;
