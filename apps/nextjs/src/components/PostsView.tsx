@@ -4,7 +4,6 @@ import clsx from "clsx";
 
 import { type RouterOutputs } from "@acme/api";
 
-import { trpc } from "~/utils/trpc";
 import PostCard from "./PostCard";
 import { useViewport } from "./layouts/main";
 import { Spinner } from "./system/spinner";
@@ -13,9 +12,11 @@ type PostsViewProps = {
   allRows: RouterOutputs["post"]["get"];
   isFetchingNextPage: boolean;
   hasNextPage: boolean | undefined;
-  fetchLatestPage: () => void;
-  isFetchingLatestPage: boolean;
   fetchNextPage: () => void;
+
+  fetchLatestPage?: () => void;
+  isFetchingLatestPage?: boolean;
+  unreadCount?: number;
 };
 
 export function PostsView({
@@ -25,17 +26,9 @@ export function PostsView({
   isFetchingNextPage,
   fetchLatestPage,
   isFetchingLatestPage,
+  unreadCount = 0,
 }: PostsViewProps) {
   const { rootRef } = useViewport();
-  const newPostsQuery = trpc.post.hasNewPosts.useQuery(
-    { after: allRows[0]?.timestamp },
-    {
-      initialData: { count: 0 },
-      enabled: allRows.length !== 0,
-      staleTime: 10 * 1000,
-      refetchInterval: 20 * 1000,
-    },
-  );
 
   const virtualizer = useVirtualizer({
     count: allRows.length + 1,
@@ -101,21 +94,19 @@ export function PostsView({
               data-index={virtualRow.index}
               ref={virtualizer.measureElement}
             >
-              {newPostsQuery.isSuccess &&
-                newPostsQuery.data.count !== 0 &&
-                virtualRow.index === 0 && (
-                  <div
-                    className={clsx(
-                      "cursor-pointer rounded-md border-2 border-pink-400 bg-pink-500/10 p-2 text-center text-sm text-pink-300",
-                      "mb-3 hover:bg-pink-500/20",
-                    )}
-                    onClick={() => void fetchLatestPage()}
-                  >
-                    {isFetchingLatestPage
-                      ? "Loading New Posts..."
-                      : `Show ${newPostsQuery.data.count} Posts`}
-                  </div>
-                )}
+              {unreadCount !== 0 && virtualRow.index === 0 && (
+                <div
+                  className={clsx(
+                    "cursor-pointer rounded-md border-2 border-pink-400 bg-pink-500/10 p-2 text-center text-sm text-pink-300",
+                    "mb-3 hover:bg-pink-500/20",
+                  )}
+                  onClick={() => void fetchLatestPage?.()}
+                >
+                  {isFetchingLatestPage
+                    ? "Loading New Posts..."
+                    : `Show ${unreadCount} Posts`}
+                </div>
+              )}
               <PostCard post={post} />
             </div>
           );

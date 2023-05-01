@@ -37,6 +37,15 @@ const Home: NextPageWithLayout = () => {
   );
 
   const allRows = data ? data.pages.flatMap((d) => d) : [];
+  const newPostsQuery = trpc.post.hasNewPosts.useQuery(
+    { after: allRows[0]?.timestamp },
+    {
+      initialData: { count: 0 },
+      enabled: allRows.length !== 0,
+      staleTime: 10 * 1000,
+      refetchInterval: 20 * 1000,
+    },
+  );
 
   if (status === "error") {
     return (
@@ -54,6 +63,7 @@ const Home: NextPageWithLayout = () => {
       hasNextPage={hasNextPage}
       isFetchingLatestPage={isFetchingPreviousPage}
       isFetchingNextPage={isFetchingNextPage}
+      unreadCount={newPostsQuery.data?.count ?? 0}
     />
   );
 };

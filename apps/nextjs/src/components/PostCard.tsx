@@ -74,7 +74,7 @@ function Actions({ post }: { post: Props["post"] }) {
   };
 
   return (
-    <div className="mt-3 flex flex-row gap-3">
+    <div className="mt-3 flex h-[20px] flex-row gap-3">
       <div
         className={clsx(
           "flex cursor-pointer flex-row items-center gap-2 text-sm",

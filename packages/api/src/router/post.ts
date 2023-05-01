@@ -80,6 +80,57 @@ export const postRouter = createTRPCRouter({
           ),
         );
     }),
+  getFavourites: protectedProcedure
+    .input(
+      z.object({
+        limit: z.number().min(1).max(100),
+        cursor: z.date().nullish(),
+      }),
+    )
+    .query(({ input, ctx }) => {
+      return prisma.post
+        .findMany({
+          include: {
+            author: {
+              select: {
+                id: true,
+                name: true,
+                image: true,
+              },
+            },
+            _count: {
+              select: {
+                favourites: true,
+              },
+            },
+          },
+          orderBy: { timestamp: "desc" },
+          where: {
+            favourites: {
+              some: {
+                user_id: ctx.session.user.id,
+              },
+            },
+            timestamp:
+              input.cursor == null
+                ? undefined
+                : {
+                    lt: new Date(input.cursor),
+                  },
+          },
+          take: input.limit,
+        })
+        .then((result) =>
+          result.map(
+            ({ _count, ...row }) =>
+              ({
+                ...row,
+                isFavourite: true,
+                favourites: _count.favourites,
+              } as PostWithFavourite),
+          ),
+        );
+    }),
   all: publicProcedure.query(() => {
     return prisma.post.findMany({
       include: { author: true },
