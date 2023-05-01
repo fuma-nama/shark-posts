@@ -28,8 +28,16 @@ export default function PostCard(props: Props) {
         <Avatar src={post.author.image} name={post.author.name} />
       </div>
       <div className="flex-grow">
-        <div className="flex flex-row items-center justify-between">
-          <p className="font-semibold">{post.author.name}</p>
+        <div className="flex flex-row items-center gap-2">
+          <p className="overflow-hidden overflow-ellipsis whitespace-nowrap font-semibold">
+            {post.author.name}
+          </p>
+          <p className="text-xs text-slate-400">
+            {post.timestamp.toLocaleString(undefined, {
+              dateStyle: "short",
+              timeStyle: "short",
+            })}
+          </p>
           <OptionsDropdown {...props} />
         </div>
         <p className="mt-1 whitespace-pre-line text-[16px]">{post.content}</p>
@@ -126,7 +134,7 @@ function OptionsDropdown({ post }: Props) {
   return (
     <Dropdown
       button={
-        <Dropdown.Button className="group relative inline-flex justify-center rounded-full text-white">
+        <Dropdown.Button className="group relative ml-auto inline-flex justify-center rounded-full text-white">
           <div
             className={clsx(
               "absolute -left-2 -top-2 h-8 w-8 rounded-full transition-colors",
