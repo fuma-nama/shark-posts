@@ -18,19 +18,19 @@ const Home: NextPageWithLayout = () => {
     fetchNextPage,
     hasNextPage,
   } = trpc.post.get.useInfiniteQuery(
-    { limit: 4 },
+    { limit: 10 },
     {
       getPreviousPageParam: (firstPage) =>
         firstPage.length !== 0
           ? {
-              date: toNonNull(firstPage[0]).timestamp,
+              date: firstPage[0].timestamp,
               type: "after",
             }
           : undefined,
       getNextPageParam: (lastPage) =>
         lastPage.length !== 0
           ? {
-              date: toNonNull(lastPage[lastPage.length - 1]).timestamp,
+              date: lastPage[lastPage.length - 1].timestamp,
               type: "before",
             }
           : undefined,
@@ -56,7 +56,7 @@ const Home: NextPageWithLayout = () => {
 
   const virtualizer = useVirtualizer({
     count: allRows.length + 1,
-    getScrollElement: () => toNonNull(rootRef.current),
+    getScrollElement: () => rootRef.current,
     estimateSize: () => 100,
   });
 
@@ -131,10 +131,6 @@ const Home: NextPageWithLayout = () => {
     </div>
   );
 };
-
-function toNonNull<T>(v: T | null | undefined): T {
-  return v as unknown as T;
-}
 
 Home.useLayout = useMainLayout;
 

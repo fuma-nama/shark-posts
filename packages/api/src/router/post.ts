@@ -1,11 +1,19 @@
 import { z } from "zod";
 
-import { prisma } from "@acme/db";
+import { prisma, type Post, type User } from "@acme/db";
 
 import { createTRPCRouter, protectedProcedure, publicProcedure } from "../trpc";
 
+type UserInfo = Pick<User, "id" | "name" | "image">;
+
+type PostWithFavourite = Post & {
+  author: UserInfo;
+  favourites: number;
+  isFavourite: boolean;
+};
+
 export const postRouter = createTRPCRouter({
-  get: publicProcedure
+  get: protectedProcedure
     .input(
       z.object({
         limit: z.number().min(1).max(100),
@@ -17,24 +25,57 @@ export const postRouter = createTRPCRouter({
           .nullish(),
       }),
     )
-    .query(({ input }) => {
-      return prisma.post.findMany({
-        include: { author: true },
-        orderBy: { timestamp: "desc" },
-        where: {
-          timestamp:
-            input.cursor == null
-              ? undefined
-              : input.cursor.type === "after"
-              ? {
-                  gt: new Date(input.cursor.date),
-                }
-              : {
-                  lt: new Date(input.cursor.date),
-                },
-        },
-        take: input.limit,
-      });
+    .query(({ input, ctx }) => {
+      return prisma.post
+        .findMany({
+          include: {
+            author: {
+              select: {
+                id: true,
+                name: true,
+                image: true,
+              },
+            },
+            favourites: {
+              take: 1,
+              select: {
+                user_id: true,
+              },
+              where: {
+                user_id: ctx.session.user.id,
+              },
+            },
+            _count: {
+              select: {
+                favourites: true,
+              },
+            },
+          },
+          orderBy: { timestamp: "desc" },
+          where: {
+            timestamp:
+              input.cursor == null
+                ? undefined
+                : input.cursor.type === "after"
+                ? {
+                    gt: new Date(input.cursor.date),
+                  }
+                : {
+                    lt: new Date(input.cursor.date),
+                  },
+          },
+          take: input.limit,
+        })
+        .then((result) =>
+          result.map(
+            ({ favourites, _count, ...row }) =>
+              ({
+                ...row,
+                isFavourite: favourites.length !== 0,
+                favourites: _count.favourites,
+              } as PostWithFavourite),
+          ),
+        );
     }),
   all: publicProcedure.query(() => {
     return prisma.post.findMany({
@@ -47,15 +88,25 @@ export const postRouter = createTRPCRouter({
     .query(({ input }) => {
       return prisma.post.findFirst({ where: { id: input.id } });
     }),
-  addToFavourite: protectedProcedure
-    .input(z.object({ post_id: z.string() }))
+  setToFavourite: protectedProcedure
+    .input(z.object({ post_id: z.string(), favourite: z.boolean() }))
     .mutation(async ({ input, ctx }) => {
-      await prisma.favourite.createMany({
-        data: {
-          post_id: input.post_id,
-          user_id: ctx.session.user.id,
-        },
-      });
+      if (input.favourite) {
+        await prisma.favourite.createMany({
+          data: {
+            post_id: input.post_id,
+            user_id: ctx.session.user.id,
+          },
+          skipDuplicates: true,
+        });
+      } else {
+        await prisma.favourite.deleteMany({
+          where: {
+            post_id: input.post_id,
+            user_id: ctx.session.user.id,
+          },
+        });
+      }
     }),
   create: protectedProcedure
     .input(

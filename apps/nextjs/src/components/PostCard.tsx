@@ -1,15 +1,23 @@
-import type { ComponentProps } from "react";
-import { CopyIcon, DotsHorizontalIcon, TrashIcon } from "@radix-ui/react-icons";
+import { type ComponentProps } from "react";
+import {
+  CopyIcon,
+  DotsHorizontalIcon,
+  HeartFilledIcon,
+  HeartIcon,
+  TrashIcon,
+} from "@radix-ui/react-icons";
 import clsx from "clsx";
 import { useSession } from "next-auth/react";
 
 import { type RouterOutputs } from "@acme/api";
 
+import { updateInfiniteData } from "~/utils/cache";
+import { trpc } from "~/utils/trpc";
 import { Avatar } from "./system/avatar";
 import { Dropdown } from "./system/dropdown";
 
 type Props = {
-  post: RouterOutputs["post"]["all"][number];
+  post: RouterOutputs["post"]["get"][number];
   onPostDelete?: () => void;
   rootProps?: ComponentProps<"div"> & {
     "data-index": number;
@@ -30,8 +38,66 @@ export default function PostCard(props: Props) {
             <p className="font-semibold">{post.author.name}</p>
             <OptionsDropdown {...props} />
           </div>
-          <p className="mt-1 whitespace-pre-line">{post.content}</p>
+          <p className="mt-1 whitespace-pre-line text-[16px]">{post.content}</p>
+          <Actions post={post} />
         </div>
+      </div>
+    </div>
+  );
+}
+
+function Actions({ post }: { post: Props["post"] }) {
+  const utils = trpc.useContext();
+  const mutation = trpc.post.setToFavourite.useMutation();
+
+  const onFavourite = () => {
+    if (mutation.isLoading) return;
+
+    const isFavourite = !post.isFavourite;
+    void mutation.mutateAsync({ post_id: post.id, favourite: isFavourite });
+
+    utils.post.get.setInfiniteData({ limit: 10 }, (prev) => {
+      if (prev == null) return prev;
+
+      const pages = updateInfiniteData(prev.pages, post.timestamp, (page) =>
+        page.map((row) =>
+          row.id === post.id
+            ? {
+                ...row,
+                isFavourite,
+                favourites: isFavourite
+                  ? row.favourites + 1
+                  : row.favourites - 1,
+              }
+            : row,
+        ),
+      );
+
+      return {
+        ...prev,
+        pages,
+      };
+    });
+  };
+
+  return (
+    <div className="mt-3 flex flex-row gap-3">
+      <div
+        className={clsx(
+          "flex cursor-pointer flex-row items-center gap-2 text-sm",
+          {
+            "text-pink-400": post.isFavourite,
+            "text-slate-400": !post.isFavourite,
+          },
+        )}
+        onClick={onFavourite}
+      >
+        {post.isFavourite ? (
+          <HeartFilledIcon className="h-4 w-4" />
+        ) : (
+          <HeartIcon className="h-4 w-4" />
+        )}
+        {post.favourites !== 0 && <span>{post.favourites}</span>}
       </div>
     </div>
   );
