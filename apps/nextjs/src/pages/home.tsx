@@ -17,7 +17,7 @@ const Home: NextPageWithLayout = () => {
     fetchNextPage,
     hasNextPage,
   } = trpc.post.get.useInfiniteQuery(
-    { limit: 10 },
+    { limit: 4 },
     {
       getPreviousPageParam: (firstPage) =>
         firstPage.length !== 0
@@ -54,7 +54,7 @@ const Home: NextPageWithLayout = () => {
   const allRows = data ? data.pages.flatMap((d) => d) : [];
 
   const virtualizer = useVirtualizer({
-    count: hasNextPage ? allRows.length + 1 : allRows.length,
+    count: allRows.length + 1,
     getScrollElement: () => toNonNull(rootRef.current),
     estimateSize: () => 100,
   });
@@ -83,13 +83,13 @@ const Home: NextPageWithLayout = () => {
 
   return (
     <div
-      className="relative flex w-full flex-col"
+      className="relative w-full"
       style={{
         height: `${virtualizer.getTotalSize()}px`,
       }}
     >
       <div
-        className="absolute left-0 top-0 mr-3 max-w-screen-lg"
+        className="absolute left-0 top-0 mr-3 flex w-full max-w-screen-lg flex-col"
         style={{
           transform: `translateY(${items[0]?.start ?? 0}px)`,
         }}
@@ -103,11 +103,12 @@ const Home: NextPageWithLayout = () => {
                 key={virtualRow.key}
                 data-index={virtualRow.index}
                 ref={virtualizer.measureElement}
+                className="flex flex-col items-center"
               >
-                {hasNextPage ? (
-                  <p>Loading more...</p>
+                {hasNextPage === undefined || hasNextPage ? (
+                  <Spinner />
                 ) : (
-                  <p>Nothing more to load</p>
+                  <p className="text-sm">Nothing more to load</p>
                 )}
               </div>
             );
@@ -129,6 +130,12 @@ const Home: NextPageWithLayout = () => {
     </div>
   );
 };
+
+function Spinner() {
+  return (
+    <div className="h-10 w-10 animate-spin items-center rounded-full border-4 border-slate-800 border-l-blue-500" />
+  );
+}
 
 function toNonNull<T>(v: T | null | undefined): T {
   return v as unknown as T;
